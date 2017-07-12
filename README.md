@@ -1,2 +1,2 @@
 # smartthings-insteon
-Instead DTH for Smartthings
+Insteon DTH for Smartthings
