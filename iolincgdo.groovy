@@ -1,5 +1,5 @@
 /**
- *  Insteon IO Linc
+ *  Insteon IO LInc
  *  Original Author     : ethomasii@gmail.com
  *  Creation Date       : 2013-12-08
  *
@@ -169,7 +169,8 @@ def getBufferStatus() {
         }
     } else {
     	log.debug "Response is for wrong device - trying again"
-        getStatus()
+        clearBuffer()
+        runIn(2,getStatus)
     }
 }
 
@@ -195,3 +196,19 @@ def finishClosing() {
     sendEvent(name: "contact", value: "closed")
 }
 
+def clearBuffer() {
+    log.debug "Clearing buffer..."
+    def params = [
+        uri: "http://${settings.username}:${settings.password}@${settings.host}:${settings.port}/1?XB=M=1"
+    ]
+    
+    try {
+        httpPost(params) {resp -> 
+        	log.debug "Buffer: ${resp}"
+        }
+    } catch (e) {
+        log.error "something went wrong: $e"
+    }
+
+
+}
