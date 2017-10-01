@@ -7,7 +7,7 @@
  *  Last Modified Date  : 2016-12-13 
  *
  *  Rewritten by        : kuestess
- *  Last Modified Date  : 2017-09-300
+ *  Last Modified Date  : 2017-09-30
  *  
  *  Disclaimer about 3rd party server: No longer uses third-party server :)
  * 
