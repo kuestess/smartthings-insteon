@@ -7,12 +7,13 @@
  *  Last Modified Date  : 2016-12-13 
  *
  *  Rewritten by        : kuestess
- *  Last Modified Date  : 2017-5-10
+ *  Last Modified Date  : 2017-12-30
  *  
  *  Disclaimer about 3rd party server: No longer uses third-party server :)
  * 
  *  Changelog:
  * 
+ *  2017-12-30: Corrected getStatus command2 to be 00 [jens@ratsey.com]
  *  2016-12-13: Added polling for Hub2
  *  2016-12-13: Added background refreshing every 3 minutes
  *  2016-11-21: Added refresh/polling functionality
@@ -155,7 +156,7 @@ def initialize(){
 def getStatus() {
 
     def myURL = [
-    	uri: "http://${settings.username}:${settings.password}@${settings.host}:${settings.port}/3?0262${settings.deviceid}0F1901=I=3"
+    	uri: "http://${settings.username}:${settings.password}@${settings.host}:${settings.port}/3?0262${settings.deviceid}0F1900=I=3"
     ]
     
     log.debug myURL
