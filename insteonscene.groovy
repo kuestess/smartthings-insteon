@@ -1,5 +1,5 @@
 /**
- *  Insteon Scene
+ *  Insteon Dimmer Switch
  *  Original Author     : ethomasii@gmail.com
  *  Creation Date       : 2013-12-08
  *
@@ -7,7 +7,7 @@
  *  Last Modified Date  : 2016-12-13
  *
  *  Rewritten by        : kuestess
- *  Last Modified Date  : 2020-06-03
+ *  Last Modified Date  : 2017-12-30
  *
  *  Disclaimer about 3rd party server: No longer uses third-party server :)
  *
@@ -32,7 +32,7 @@ preferences {
 }
 
 metadata {
-    definition (name: "Insteon Dimmer Switch or Plug", author: "kuestess", oauth: true) {
+    definition (name: "Insteon Local Scene", author: "kuestess", oauth: true) {
         capability "Switch Level"
         capability "Polling"
         capability "Switch"
@@ -77,14 +77,14 @@ def parse(String description) {
 
 def on() {
     log.debug "Turning scene ON"
-    sendCmd("11", ${settings.group})
+    sendCmd("11", "$settings.group")
     sendEvent(name: "switch", value: "on");
     sendEvent(name: "level", value: 100, unit: "%")
 }
 
 def off() {
     log.debug "Turning scene OFF"
-    sendCmd("13", ${settings.group})
+    sendCmd("13", "$settings.group")
     sendEvent(name: "switch", value: "off");
     sendEvent(name: "level", value: 0, unit: "%")
 }
@@ -119,13 +119,11 @@ def sendCmd(num, group)
 {
     log.debug "Sending Command"
 
-    // Will re-test this later
-    // sendHubCommand(new physicalgraph.device.HubAction("""GET /3?0262${settings.deviceid}0F${num}${level}=I=3 HTTP/1.1\r\nHOST: IP:PORT\r\nAuthorization: Basic B64STRING\r\n\r\n""", physicalgraph.device.Protocol.LAN, "${deviceNetworkId}"))
-    httpGet("http://${settings.username}:${settings.password}@${settings.host}:${settings.port}/0?${num}${group}=I=3") {response ->
-        def content = response.data
+    def userpasstext = "$settings.username:$settings.password"
+    def userpass = userpasstext.encodeAsBase64().toString()
 
-        // log.debug content
-    }
+    sendHubCommand(new physicalgraph.device.HubAction("""GET /0?${num}${group}=I=0 HTTP/1.1\r\nHOST: ${settings.host}:${settings.port}\r\nAuthorization: Basic ${userpass}\r\n\r\n""", physicalgraph.device.Protocol.LAN, "${deviceNetworkId}"))
+
     log.debug "Command Completed"
 }
 
