@@ -7,12 +7,13 @@
  *  Last Modified Date  : 2016-12-13
  *
  *  Rewritten by        : kuestess
- *  Last Modified Date  : 2017-12-30
+ *  Last Modified Date  : 2020-10-31
  *
  *  Disclaimer about 3rd party server: No longer uses third-party server :)
  *
  *  Changelog:
  *
+ *  2020-10-31: Update to use hubAction
  *  2017-12-30: Corrected getStatus command2 to be 00 [jens@ratsey.com]
  *  2016-12-13: Added polling for Hub2
  *  2016-12-13: Added background refreshing every 3 minutes
@@ -33,8 +34,6 @@ preferences {
 
 metadata {
     definition (name: "Insteon Local Scene", author: "kuestess", oauth: true) {
-        capability "Switch Level"
-        capability "Polling"
         capability "Switch"
     }
 
@@ -130,14 +129,12 @@ def sendCmd(num, group)
 def refresh()
 {
     log.debug "Refreshing.."
-    poll()
+
 }
 
 def poll()
 {
     log.debug "Polling.."
-    getStatus()
-    runIn(180, refresh)
 }
 
 def ping()
@@ -148,64 +145,4 @@ def ping()
 
 def initialize(){
     //poll()
-}
-
-def getStatus() {
-
-    def myURL = [
-    	uri: "http://${settings.username}:${settings.password}@${settings.host}:${settings.port}/3?0262${settings.deviceid}0F1900=I=3"
-    ]
-
-    log.debug myURL
-    httpPost(myURL)
-
-    def buffer_status = runIn(2, getBufferStatus)
-}
-
-def getBufferStatus() {
-	def buffer = ""
-	def params = [
-        uri: "http://${settings.username}:${settings.password}@${settings.host}:${settings.port}/buffstatus.xml"
-    ]
-
-    try {
-        httpPost(params) {resp ->
-            buffer = "${resp.responseData}"
-            log.debug "Buffer: ${resp.responseData}"
-        }
-    } catch (e) {
-        log.error "something went wrong: $e"
-    }
-
-	def buffer_end = buffer.substring(buffer.length()-2,buffer.length())
-	def buffer_end_int = Integer.parseInt(buffer_end, 16)
-
-    def parsed_buffer = buffer.substring(0,buffer_end_int)
-    log.debug "ParsedBuffer: ${parsed_buffer}"
-
-    def responseID = parsed_buffer.substring(22,28)
-
-    if (responseID == settings.deviceid) {
-        log.debug "Response is for correct device: ${responseID}"
-        def status = parsed_buffer.substring(38,40)
-        log.debug "Status: ${status}"
-
-        def level = Math.round(Integer.parseInt(status, 16)*(100/255))
-        log.debug "Level: ${level}"
-
-        if (level == 0) {
-            log.debug "Device is off..."
-            sendEvent(name: "switch", value: "off")
-            sendEvent(name: "level", value: level, unit: "%")
-            }
-
-        else if (level > 0) {
-            log.debug "Device is on..."
-            sendEvent(name: "switch", value: "on")
-            sendEvent(name: "level", value: level, unit: "%")
-        }
-    } else {
-    	log.debug "Response is for wrong device - trying again"
-        getStatus()
-    }
 }
