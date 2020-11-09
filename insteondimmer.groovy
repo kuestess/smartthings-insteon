@@ -30,6 +30,7 @@ preferences {
     input("port", "text", title: "Port", description: "The hub port.")
     input("username", "text", title: "Username", description: "The hub username (found in app)")
     input("password", "text", title: "Password", description: "The hub password (found in app)")
+    input("poll_frequency", "number", title: "Poll frequency", description: "Device status polling in minutes (0 to disable)", defaultValue: 3)
 }
 
 metadata {
@@ -133,15 +134,21 @@ def refresh()
 
 def poll()
 {
-    log.debug "Polling.."
     getStatus()
-    runIn(180, refresh)
-}
 
-def ping()
-{
-    log.debug "Pinging.."
-    poll()
+    def polltimer = getPollTimer().toInteger()
+
+    if(polltimer != 0){
+    	log.debug "Polling.."
+
+        def randomness = Math.abs(new Random().nextInt()) % 60 + 10
+        log.debug "Random: $randomness"
+
+        runIn((60*polltimer)+randomness, refresh)
+    } else {
+    	//do nothing
+        //log.debug "Polling disabled"
+    }
 }
 
 def initialize(){
@@ -165,7 +172,7 @@ def getBufferStatus() {
     def userpass = userpasstext.encodeAsBase64().toString()
 
     sendHubCommand(new physicalgraph.device.HubAction("""GET /buffstatus.xml HTTP/1.1\r\nHOST: ${settings.host}:${settings.port}\r\nAuthorization: Basic ${userpass}\r\n\r\n""", physicalgraph.device.Protocol.LAN, "${deviceNetworkId}", [callback:parseBuffer]))
-   }
+}
 
 def parseBuffer(response){
 	def buffer = ""
@@ -206,4 +213,13 @@ def parseBuffer(response){
     	log.debug "Response is for wrong device - trying again"
         getStatus()
     }
+}
+
+def getPollTimer(){
+    if (settings.poll_frequency == null) {
+    	settings.poll_frequency = 3
+    }
+
+    def polltimer = settings.poll_frequency as Integer
+	return polltimer
 }
